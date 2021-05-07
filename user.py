@@ -42,7 +42,7 @@ class user():
                 return 0
     def quit(self):
         if self.quit in self.list_of_Methods:
-            self.GameManager.quit()
+            self.GameManager.quit(self)
         else:
             return 0
     def unregister(self):

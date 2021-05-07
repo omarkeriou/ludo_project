@@ -13,7 +13,7 @@ class room:
         else:
             self.free=False
     def removePlayer(self):
-        if self.numerOfPlayer>0:
+        if self.numberOfPlayer>0:
             self.numberOfPlayer-=1
             self.free=True
 

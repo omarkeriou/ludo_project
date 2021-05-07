@@ -29,6 +29,7 @@ class GameManagement(metaclass=GameManagementMeta):
     def unregister(self, user):
         self.RegisterManagement.unregister(user)
         self.update(user)
+        return 1
 
     def update(self, user):
         if self.RoomManagement.is_joined(user):

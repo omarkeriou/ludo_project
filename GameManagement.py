@@ -1,6 +1,7 @@
 from threading import Lock, Thread
 from RoomManagement import *
 from RegisterManagement import *
+from LudoDatabase import *
 
 class GameManagementMeta(type):
     _instances = {}
@@ -16,6 +17,7 @@ class GameManagement(metaclass=GameManagementMeta):
     def __init__(self):
         self.RoomManagement = RoomManagement()
         self.RegisterManagement = RegisterManagement()
+        self.Database= Ludo_Database()
 
 
     def register(self, user):

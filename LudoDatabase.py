@@ -2,7 +2,7 @@ import mysql.connector
 from mysql.connector import errorcode
 from threading import Lock
 
-class DataBaseMeta(type):
+class Ludo_DatabasetMeta(type):
     _instances = {}
     _lock: Lock = Lock()
     def __call__(cls, *args, **kwargs):
@@ -12,15 +12,17 @@ class DataBaseMeta(type):
                 cls._instances[cls] = instance
         return cls._instances[cls]
 
-class Ludo_Database(DataBaseMeta):
-    def __new__(self):
+
+
+class Ludo_Database(metaclass=Ludo_DatabasetMeta):
+    def __init__(self):
         self.__DB_name='Ludo_DB'
         self.__user='root'
-        self.__password='#######'
+        self.__password='######'
         self.__cnx=[]
         self.__cursor=[]
         self.connected=False
-        self.List_of_Players=[['Omar','SDFSASS',28,'Tun',1540,100],['Cyrine','dsss',25,'Tun',1504,100]]
+        self.List_of_Players=[]
         self.__Tables=(
             '''CREATE TABLE IF NOT EXISTS users (
             Nickname varchar(14) NOT NULL,
@@ -31,15 +33,6 @@ class Ludo_Database(DataBaseMeta):
             Trophies int(3),
             PRIMARY KEY (Nickname,Password)
             ) ENGINE=InnoDB''')
-        self.__connect(self)
-        self.__create_database(self)
-        self.__enter_DB(self)
-        self.__create_Table(self)
-        self.insert_Player_list(self)
-        self.load_Player_list(self)
-        s=1
-
-
     def __create_database(self):
         try:
             self.__cursor.execute("CREATE DATABASE IF NOT EXISTS {} DEFAULT CHARACTER SET 'utf8'".format(self.__DB_name))
@@ -82,13 +75,20 @@ class Ludo_Database(DataBaseMeta):
                 print(err.msg)
         else:
             print("OK")
+
+
+    def connect(self):
+        self.__connect()
+        self.__create_database()
+        self.__enter_DB()
+        self.__create_Table()
+
     def load_Player_list(self):
         if self.connected:
             try:
                 query=('''SELECT * FROM users''')
                 self.__cursor.execute(query)
                 self.List_of_Players=[list(l) for l in self.__cursor.fetchall()]
-
             except mysql.connector.Error as err:
                 print(err.msg)
 
@@ -109,4 +109,54 @@ class Ludo_Database(DataBaseMeta):
                         print(err.msg)
                 else:
                     print(err.msg)
+
+    def get_List_of_all_Players(self):
+        return self.List_of_Players
+
+    def set_List_of_all_Players(self,list):
+        self.List_of_Players=list
+
+    def load_Player(self):
+        if self.connected:
+            try:
+                query = ("SELECT * FROM users WHERE Nickname= %s AND Password= %s")
+                self.__cursor.execute(query,self.List_of_Players[:2])
+                data=self.__cursor.fetchone()
+                if not data:
+                    self.List_of_Players = []
+                else:
+                    self.List_of_Players = list(data)
+
+
+
+            except mysql.connector.Error as err:
+                print(err.msg)
+
+    def insert_Player(self):
+        try:
+            query = (
+                '''INSERT INTO users (Nickname, Password, Age, Nationality, score, Trophies) VALUES (%s, %s, %s, %s, %s, %s)''')
+            self.__cursor.execute(query, self.List_of_Players)
+            self.__cnx.commit()
+            a = 1
+        except mysql.connector.Error as err:
+            if err.errno == errorcode.ER_DUP_ENTRY:
+                try:
+                    query = (
+                        '''UPDATE users SET Age = %s , Nationality = %s, score = %s, Trophies = %s WHERE Nickname = %s AND Password = %s''')
+                    self.__cursor.execute(query, [self.List_of_Players[j] for j in [2, 3, 4, 5, 0, 1]])
+                    self.__cnx.commit()
+                except mysql.connector.Error as err:
+                    print(err.msg)
+            else:
+                print(err.msg)
+
+    def remove_Player(self):
+        if self.connected:
+            try:
+                query = ("DELETE FROM users WHERE Nickname= %s AND Password= %s")
+                self.__cursor.execute(query,self.List_of_Players[:2])
+                self.__cnx.commit()
+            except mysql.connector.Error as err:
+                print(err.msg)
 

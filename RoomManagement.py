@@ -19,14 +19,14 @@ class RoomManagementMeta(type):
 class RoomManagement(metaclass=RoomManagementMeta):
     def __init__(self):
         self.__List_of_Players_joined_with_roomNumbers = []
-        self.__List_of_Rooms=[room(),room()]
+        self.__List_of_Rooms=[]
 
 
     def join(self, user):
-        room=self.choose()
-        if room.free:
+        room_chosen=self.choose()
+        if room_chosen.free:
             print(user.name, "joined")
-            self.__addPlayer(user,room)
+            self.__addPlayer(user,room_chosen)
             return 1
         else:
             print("Sorry, the game is full")
@@ -62,6 +62,13 @@ class RoomManagement(metaclass=RoomManagementMeta):
             if i.free:
                 print("Room chosen")
                 return i
+        self.create_room()
+        self.choose()
+
+    def create_room(self):
+        self.__List_of_Rooms.append(room())
+
+
 
     # def QuitRoom(self, user):
     #         print("Room quitted")

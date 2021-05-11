@@ -3,9 +3,9 @@ from room import room
 def index2d(list2d,value):
     for i, x in enumerate(list2d):
         if value in x:
-            # return (i, x.index(value))
-            return True
-    return False
+            return (i, x.index(value))[0]
+    return None
+
 class RoomManagementMeta(type):
     _instances = {}
     _lock: Lock = Lock()
@@ -33,7 +33,7 @@ class RoomManagement(metaclass=RoomManagementMeta):
             return 0
 
     def unjoin(self, user):
-        if user in self.__List_of_Players_joined:
+        if self.is_joined(user):
             self.__removePlayer(user)
             print("Player", user.name, "unjoined")
             return 1
@@ -53,7 +53,10 @@ class RoomManagement(metaclass=RoomManagementMeta):
 
     def is_joined(self,user):
         list2d=self.__List_of_Players_joined_with_roomNumbers
-        return index2d(list2d,user)
+        if index2d(list2d,user)==None:
+            return False
+        else:
+            return True
     def choose(self):
         for i in self.__List_of_Rooms:
             if i.free:

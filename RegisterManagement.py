@@ -18,10 +18,6 @@ class RegisterManagementMeta(type):
 
 class RegisterManagement(metaclass=RegisterManagementMeta):
     def __init__(self):
-        self.__List_of_Players_registered = []
-        self.__number_of_Players_registered = 0
-        self.__List_of_Players_logged_in=[]
-        self.__number_of_Players_registered = 0
         self.__List_of_Players = []
 
 
@@ -56,17 +52,15 @@ class RegisterManagement(metaclass=RegisterManagementMeta):
         list2d = self.__List_of_Players
         idx = index2d(list2d, user)
         self.__List_of_Players.pop(idx)
-        self.__number_of_Players_registered -= 1
+
     def __login_Player(self, user):
         list2d=self.__List_of_Players
         idx=index2d(list2d,user)
         self.__List_of_Players[idx][1]=True
-        self.__number_of_Players_logged_in += 1
     def __logout_Player(self,user):
         list2d = self.__List_of_Players
         idx = index2d(list2d, user)
         self.__List_of_Players[idx][1] = False
-        self.__number_of_Players_logged_in -= 1
 
     def is_logged_in(self,user):
         list2d=self.__List_of_Players

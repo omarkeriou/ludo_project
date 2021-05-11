@@ -1,6 +1,7 @@
 import mysql.connector
 from mysql.connector import errorcode
 from threading import Lock
+from MySQL_DB import MySQL_DB
 
 class Ludo_DatabasetMeta(type):
     _instances = {}
@@ -16,147 +17,50 @@ class Ludo_DatabasetMeta(type):
 
 class Ludo_Database(metaclass=Ludo_DatabasetMeta):
     def __init__(self):
-        self.__DB_name='Ludo_DB'
-        self.__user='root'
-        self.__password='######'
-        self.__cnx=[]
-        self.__cursor=[]
-        self.connected=False
         self.List_of_Players=[]
-        self.__Tables=(
-            '''CREATE TABLE IF NOT EXISTS users (
-            Nickname varchar(14) NOT NULL,
-            Password varchar(60) NOT NULL,
-            Age int(3) NOT NULL,
-            Nationality varchar(20) NOT NULL,
-            score int(4),
-            Trophies int(3),
-            PRIMARY KEY (Nickname,Password)
-            ) ENGINE=InnoDB''')
-    def __create_database(self):
-        try:
-            self.__cursor.execute("CREATE DATABASE IF NOT EXISTS {} DEFAULT CHARACTER SET 'utf8'".format(self.__DB_name))
-        except mysql.connector.Error as err:
-            print("Failed creating database: {}".format(err))
-            exit(1)
-    def __connect(self):
-        try:
-            self.__cnx = mysql.connector.connect(user=self.__user, password=self.__password)
-            self.__cursor = self.__cnx.cursor()
-            self.connected=True
-        except mysql.connector.Error as err:
-            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                print("Something is wrong with your user name or password")
-            elif err.errno == errorcode.ER_BAD_DB_ERROR:
-                print("Database does not exist")
-            else:
-                print(err)
-    def __enter_DB(self):
-        try:
-            self.__cursor.execute("USE {}".format(self.__DB_name))
-        except mysql.connector.Error as err:
-            print("Database {} does not exists.".format(self.__DB_name))
-            if err.errno == errorcode.ER_BAD_DB_ERROR:
-                self.create_database()
-                print("Database {} created successfully.".format(self.__DB_name))
-                self.__cnx.database = self.__DB_name
-            else:
-                print(err)
-                exit(1)
-    def __create_Table(self):
-        table_description = self.__Tables
-        try:
-            print("Creating table {}: ".format('users'), end='')
-            self.__cursor.execute(table_description)
-        except mysql.connector.Error as err:
-            if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                print("already exists.")
-            else:
-                print(err.msg)
-        else:
-            print("OK")
+        self.__DB= MySQL_DB(DB_name='Ludo_DB',user='root',password='Sarrounpw.1',Table_name='users')
+        self.table={'Nickname':'varchar(14)',
+                    'Password':'varchar(60)',
+                    'Age':'int(3)',
+                    'Nationality':'varchar(20)',
+                    'Score':'int(4)',
+                    'Trophies':'int(3)',
+                    'PRIMARY KEY':'(Nickname,Password)'
+                    }
 
 
+    def list_to_Dict(self,Data_list):
+        return [{list(self.table)[i]: Data_list[j][i] for i in range(len(Data_list[j]))} for j in range(len(Data_list))]
     def connect(self):
-        self.__connect()
-        self.__create_database()
-        self.__enter_DB()
-        self.__create_Table()
+        self.__DB.connect()
+        self.__DB.create_database()
+        self.__DB.use_DB()
+        self.__DB.create_Table(self.table)
 
-    def load_Player_list(self):
-        if self.connected:
-            try:
-                query=('''SELECT * FROM users''')
-                self.__cursor.execute(query)
-                self.List_of_Players=[list(l) for l in self.__cursor.fetchall()]
-            except mysql.connector.Error as err:
-                print(err.msg)
+    def select_Player_list(self):
+        self.__DB.select_all()
+
 
     def insert_Player_list(self):
-        for i in self.List_of_Players:
-            try:
-                query = ('''INSERT INTO users (Nickname, Password, Age, Nationality, score, Trophies) VALUES (%s, %s, %s, %s, %s, %s)''')
-                self.__cursor.execute(query, i)
-                self.__cnx.commit()
-                a=1
-            except mysql.connector.Error as err:
-                if err.errno == errorcode.ER_DUP_ENTRY:
-                    try:
-                        query = ('''UPDATE users SET Age = %s , Nationality = %s, score = %s, Trophies = %s WHERE Nickname = %s AND Password = %s''')
-                        self.__cursor.execute(query, [i[j] for j in [2,3,4,5,0,1]])
-                        self.__cnx.commit()
-                    except mysql.connector.Error as err:
-                        print(err.msg)
-                else:
-                    print(err.msg)
+        self.__DB.insert_all(self.table)
+
 
     def get_List_of_all_Players(self):
-        return self.List_of_Players
+        self.List_of_Players=self.__DB.getData()
+        return self.list_to_Dict(self.List_of_Players)
 
     def set_List_of_all_Players(self,list):
-        self.List_of_Players=list
+        list_dct=self.list_to_Dict(list)
+        self.List_of_Players=list_dct
+        self.__DB.setData(self.List_of_Players)
 
     def load_Player(self):
-        if self.connected:
-            try:
-                query = ("SELECT * FROM users WHERE Nickname= %s AND Password= %s")
-                self.__cursor.execute(query,self.List_of_Players[:2])
-                data=self.__cursor.fetchone()
-                if not data:
-                    self.List_of_Players = []
-                else:
-                    self.List_of_Players = list(data)
+        self.__DB.select_one(self.List_of_Players)
 
-
-
-            except mysql.connector.Error as err:
-                print(err.msg)
 
     def insert_Player(self):
-        try:
-            query = (
-                '''INSERT INTO users (Nickname, Password, Age, Nationality, score, Trophies) VALUES (%s, %s, %s, %s, %s, %s)''')
-            self.__cursor.execute(query, self.List_of_Players)
-            self.__cnx.commit()
-            a = 1
-        except mysql.connector.Error as err:
-            if err.errno == errorcode.ER_DUP_ENTRY:
-                try:
-                    query = (
-                        '''UPDATE users SET Age = %s , Nationality = %s, score = %s, Trophies = %s WHERE Nickname = %s AND Password = %s''')
-                    self.__cursor.execute(query, [self.List_of_Players[j] for j in [2, 3, 4, 5, 0, 1]])
-                    self.__cnx.commit()
-                except mysql.connector.Error as err:
-                    print(err.msg)
-            else:
-                print(err.msg)
+        self.__DB.insert_one(self.table)
 
     def remove_Player(self):
-        if self.connected:
-            try:
-                query = ("DELETE FROM users WHERE Nickname= %s AND Password= %s")
-                self.__cursor.execute(query,self.List_of_Players[:2])
-                self.__cnx.commit()
-            except mysql.connector.Error as err:
-                print(err.msg)
+        self.__DB.delete_one(self.List_of_Players)
 

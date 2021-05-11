@@ -23,14 +23,14 @@ class Database(metaclass=DatabaseMeta):
         self.Ludo_DataBase.set_List_of_all_Players(list)
         self.Ludo_DataBase.insert_Player_list()
 
-    def load_list(self):
-        self.Ludo_DataBase.load_Player_list()
+    def select_list(self):
+        self.Ludo_DataBase.select_Player_list()
         return self.Ludo_DataBase.get_List_of_all_Players()
 
-    def load_one(self,user_data):
+    def select_one(self,user_data):
         self.Ludo_DataBase.set_List_of_all_Players(user_data)
         self.Ludo_DataBase.load_Player()
-        return self.Ludo_DataBase.get_List_of_all_Players()
+        return self.Ludo_DataBase.get_List_of_all_Players()[0]
 
     def insert_one(self,user_data):
         self.Ludo_DataBase.set_List_of_all_Players(user_data)

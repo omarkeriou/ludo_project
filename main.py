@@ -6,6 +6,9 @@ def main():
     user1.show_all_available_methods()
     user1.register()
     user1.show_all_available_methods()
+    user1.chooseRoom()
+    user1.show_all_available_methods()
+
     user1.join()
     user1.show_all_available_methods()
     user1.play()

@@ -1,7 +1,6 @@
 from threading import Lock, Thread
 from RoomManagement import *
 from RegisterManagement import *
-from Database import *
 
 class GameManagementMeta(type):
     _instances = {}
@@ -15,24 +14,9 @@ class GameManagementMeta(type):
 
 class GameManagement(metaclass=GameManagementMeta):
     def __init__(self):
+
         self.RoomManagement = RoomManagement()
         self.RegisterManagement = RegisterManagement()
-        self.Database= Database()
-        self.Test_Database()
-
-    def Test_Database(self):
-        self.Database.insert_list([['Om','vvvvv',28,'Tun',147,1410],['Osm','vvvvv',28,'Tun',147,1410],['hgfd','vvvvv',8,'Tu',1440,140]])
-        a=self.Database.select_list()
-        for i in a:
-            print(i)
-        b=self.Database.select_one([['hgfd','vvvvv']])
-        print(b)
-        self.Database.insert_one([['omar', 'vvzgv',15,'Sui',1,-1]])
-        self.Database.delete_one([['hgfd','vvvvv']])
-        a=self.Database.select_list()
-        for i in a:
-            print(i)
-
 
     def register(self, user):
         self.RegisterManagement.register(user)

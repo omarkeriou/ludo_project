@@ -59,3 +59,7 @@ class GameManagement(metaclass=GameManagementMeta):
 
     def closeWindow(self):
         print("Window closed")
+
+    def choose(self):
+        self.RoomManagement.choose()
+

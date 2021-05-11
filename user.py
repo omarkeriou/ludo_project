@@ -10,9 +10,6 @@ class user():
         self.age = 0
         self.nationality = ""
         self.GameManager=GameManagement()
-        # self.registered=False
-        # self.is_playing=False
-        # self.logged_in=False
         self.list_of_Methods=[self.register,self.login,self.quit,self.edit_profile,self.closeWindow]
 
     def show_all_available_methods(self):
@@ -45,7 +42,7 @@ class user():
                 return 0
     def quit(self):
         if self.quit in self.list_of_Methods:
-            self.GameManager.quit()
+            self.GameManager.quit(self)
         else:
             return 0
     def unregister(self):
